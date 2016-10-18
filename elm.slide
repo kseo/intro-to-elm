@@ -1,0 +1,537 @@
+Introduction to Elm
+
+Kwang Yul Seo
+Haskell Shcool
+@kwangyulseo
+kwangyul.seo@gmail.com
+
+* Outline
+
+1. What is Elm?
+2. Key Features
+3. Coer Language
+4. Type System
+5. Error Handling
+6. Result and Task
+6. Elm Architecture (Demo)
+
+* What is Elm?
+
+- Elm is a functional language that compiles to JavaScript
+- Competes with projects like React as a tool for creating websites and web app
+- Has a very strong emphasis on simplicity, ease-of-use, and quality tooling
+
+* Why a functional language?
+
+- No runtime errors in practice. No null. No undefined is not a function
+- Friendly error messages that help you add features more quickly
+- Well-architected code that stays well-architected as your app grows
+- Automatically enforced semantic versioning for all Elm packages
+
+* Key Features
+
+- JavaScript Interop
+- No Runtime Exceptions
+- Great Performance
+- Enforced Semantic Versioning
+
+* JavaScript Interop
+
+- Elm compiles to JavaScript
+- Incremental rewrite is possible
+
+.image elm/embed.png 200 _
+
+* No Runtime Exceptions
+
+- Elm uses type inference to detect problems during compilation
+
+.image elm/errors.png 400 _
+
+* Great Performance
+
+- Elm has its own virtual DOM implementation
+- All values are immutable
+
+.image elm/benchmark.png 400 _
+
+* Enforced Semantic Versioning
+
+- Elm can detect API changes automatically thanks to its type system
+- Force packages to follow semantic versioning
+
+.image elm/semver.png 400 _
+
+* Values
+
+  > "hello"
+  "hello"
+  > "hello" ++ "world"
+  "helloworld"
+  > "hello" ++ " world"
+  "hello world"
+
+- Elm uses (++) operator to put strings together
+
+  > 2 + 3 * 4
+  14
+  > (2 + 3) * 4
+  20
+
+  > 9 / 2
+  4.5
+  > 9 // 2
+  4
+
+- Elm makes a distinction between integer and floating point numbers
+- `(/)` floating pointer division, `(//)` integer division
+
+* Functions
+
+  > isNegative n = n < 0
+  <function>
+
+  > isNegative 4
+  False
+
+  > isNegative -7
+  True
+
+  > isNegative (-3 * -4)
+  False
+
+- Elm uses spaces to apply the function. e.g., `add 3 4`
+
+* Anonymous Functions
+
+- Elm can create a function without naming it
+
+  > \n -> n / 2
+  <function:d_e_l_t_r_o_n_3_0_3_0>
+
+  > (\n -> n / 2) 128
+  64
+
+* If Expressions
+  > if True then "hello" else "world"
+  "hello"
+
+  > if False then "hello" else "world"
+  "world"
+
+- Elm does not have a notion of "truthiness".
+- Numbers and strings and lists cannot be used as boolean values.
+
+  > over9000 powerLevel = \
+  |   if powerLevel > 9000 then "It's over 9000!!!" else "meh"
+  <function>
+
+  > over9000 42
+  "meh"
+
+  > over9000 100000
+  "It's over 9000!!!"
+
+* Lists
+- Lists are one of the most common data structures in Elm
+- Hold a sequence of related things
+- Must all have the same type
+
+  > names = [ "Alice", "Bob", "Chuck" ]
+  ["Alice","Bob","Chuck"]
+  > List.isEmpty names
+  False
+  > List.length names
+  3
+  > List.reverse names
+  ["Chuck","Bob","Alice"]
+
+  > numbers = [1,4,3,2]
+  [1,4,3,2]
+  > List.sort numbers
+  [1,2,3,4]
+  > double n = n * 2
+  <function>
+  > List.map double numbers
+  [2,8,6,4]
+
+* Tuples
+- Hold a fixed number of values
+- Each value can have any type
+- Commonly used to return more than one value from a function
+
+  > import String
+
+  > goodName name = \
+  |   if String.length name <= 20 then \
+  |     (True, "name accepted!") \
+  |   else \
+  |     (False, "name was too long; please limit it to 20 characters")
+
+  > goodName "Tom"
+  (True, "name accepted!")
+
+* Records
+
+- A set of key-value pairs, similar to objects in JavaScript or Python
+- Create records using curly braces and access fields using a dot
+
+  > point = { x = 3, y = 4 }
+  { x = 3, y = 4 }
+
+  > point.x
+  3
+
+  > bill = { name = "Gates", age = 57 }
+  { age = 57, name = "Gates" }
+
+  > bill.name
+  "Gates"
+
+- Record access that works like a function
+
+  > .name bill
+  "Gates"
+
+  > List.map .name [bill,bill,bill]
+  ["Gates","Gates","Gates"]
+
+* Pattern Matching
+
+- Pass any record in as long as it has an age field that holds a number
+
+  > under70 {age} = age < 70
+  <function>
+
+  > under70 bill
+  True
+
+  > under70 { species = "Triceratops", age = 68000000 }
+  False
+
+* Record Update
+
+- Elm does not make destructive updates
+- Create a new record rather than overwriting the existing one
+- Elm makes this efficient by sharing as much content as possible
+
+  > { bill | name = "Nye" }
+  { age = 57, name = "Nye" }
+
+  > { bill | age = 22 }
+  { age = 22, name = "Gates" }
+
+* Comparing Records and Objects
+
+- You cannot ask for a field that does not exist.
+- No field will ever be `undefined` or `null`.
+- You cannot create recursive records with a `this` or `self` keyword.
+
+* Types
+
+- Users do not see runtime errors in practice
+
+  toFullName person =
+    person.firstName ++ " " ++ person.lastName
+
+  fullName =
+    toFullName { fistName = "Hermann", lastName = "Hesse" }
+
+- Elm does not compile
+
+  -- TYPE MISMATCH ---------------------------------------------------------------
+  The argument to function `toFullName` is causing a mismatch.
+
+  6│   toFullName { fistName = "Hermann", lastName = "Hesse" }
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  Function `toFullName` is expecting the argument to be:
+      { …, firstName : … }
+
+  But it is:
+      { …, fistName : … }
+
+  Hint: I compared the record fields and found some potential typos.
+      firstName <-> fistName
+
+* Primitive and List Types
+
+  > "hello"
+  "hello" : String
+
+  > not True
+  False : Bool
+
+  > round 3.1415
+  3 : Int
+
+- The lower-case `a` is called a type variable
+- There are no constraints in our program that pin this down to some specific type
+
+  > [ "Alice", "Bob" ]
+  [ "Alice", "Bob" ] : List String
+
+  > [ 1.0, 8.6, 42.1 ]
+  [ 1.0, 8.6, 42.1 ] : List Float
+
+  > []
+  [] : List a
+
+* Function Type
+
+  > import String
+  > String.length
+  <function> : String -> Int
+
+  > String.length "Supercalifragilisticexpialidocious"
+  34 : Int
+
+- It must take in a `String` argument, and it will definitely return an `Int` result
+
+  > String.length [1,2,3]
+  -- error!
+
+  > String.length True
+  -- error!
+
+* Type Annotations
+
+- The compiler will always verify that all the annotations you add are correct
+
+  half : Float -> Float
+  half n =
+    n / 2
+
+  divide : Float -> Float -> Float
+  divide x y =
+    x / y
+
+  askVegeta : Int -> String
+  askVegeta powerLevel =
+    if powerLevel > 9000 then
+      "It's over 9000!!!"
+
+    else
+      "It is " ++ toString powerLevel ++ "."
+
+* Type Alias
+
+  hasBio : { name : String, bio : String, pic : String } -> Bool
+  hasBio user =
+    String.length user.bio > 0
+
+- Make your type annotations easier to read
+- Two definitions are exactly the same
+
+  type alias User =
+    { name : String
+    , bio : String
+    , pic : String
+    }
+
+  hasBio : User -> Bool
+  hasBio user =
+    String.length user.bio > 0
+
+* Union Type
+
+  > type Visibility = All | Active | Completed
+
+  > All
+  All : Visibility
+
+  > Active
+  Active : Visibility
+
+  > Completed
+  Completed : Visibility
+
+
+* Union Type Example
+
+  > type User = Anonymous | Named String
+
+  > Anonymous
+  Anonymous : User
+
+  > Named
+  <function> : String -> User
+
+  > Named "AzureDiamond"
+  Named "AzureDiamond" : User
+
+  > Named "abraham-lincoln"
+  Named "abraham-lincoln" : User
+
+  userPhoto : User -> String
+  userPhoto user =
+    case user of
+      Anonymous ->
+        "anon.png"
+
+      Named name ->
+        "users/" ++ name ++ ".png"
+
+* Currying
+
+- `divide` takes two arguments and returns a `Float`
+
+  > divide x y = x / y
+  <function> : Float -> Float -> Float
+
+  > divide 3 2
+  1.5 : Float
+
+- Convert the definition to use anonymous functions
+
+  > divide x y = x / y
+  <function> : Float -> Float -> Float
+
+  > divide x = \y -> x / y
+  <function> : Float -> Float -> Float
+
+  divide = \x -> (\y -> x / y)
+  <function> : Float -> Float -> Float
+
+- `divide` takes one argument and returns a function `Float -> Float`
+- `Float -> Float -> Float` is in fact `Float -> (Float -> Float)`
+
+* Error Handling Historical Contex
+
+- Null
+The inventor, Tony Hoare, has this to say about it:
+
+I call it my billion-dollar mistake. It was the invention of the null reference in 1965. At that time, I was designing the first comprehensive type system for references in an object oriented language (ALGOL W). My goal was to ensure that all use of references should be absolutely safe, with checking performed automatically by the compiler. But I couldn't resist the temptation to put in a null reference, simply because it was so easy to implement. This has led to innumerable errors, vulnerabilities, and system crashes, which have probably caused a billion dollars of pain and damage in the last forty years.
+
+- Exceptions
+Code that looks fine may actually crash at runtime
+.link http://www.joelonsoftware.com/items/2003/10/13.html Joel Spolsky's article on Exceptions
+
+* Maybe
+
+- It is a union type
+- To deal with the data, you have to use a case expression
+- The compiler can ensure that you have definitely covered both possibilities
+
+  > type Maybe a = Nothing | Just a
+
+  > Nothing
+  Nothing : Maybe a
+
+  > Just
+  <function> : a -> Maybe a
+
+  > Just "hello"
+  Just "hello" : Maybe String
+
+  > Just 1.618
+  Just 1.618 : Maybe Float
+
+* Optional Fields
+
+  type alias User =
+    { name : String
+    , age : Maybe Int
+    }
+
+  sue : User
+  sue =
+    { name = "Sue", age = Nothing }
+
+  tom : User
+  tom =
+    { name = "Tom", age = Just 24 }
+
+* Partial Functions
+
+- You want a function that gives an answer sometimes, but just does not in other cases
+
+  getTeenAge : User -> Maybe Int
+  getTeenAge user =
+    case user.age of
+      Nothing ->
+        Nothing
+
+      Just age ->
+        if 13 <= age && age <= 18 then
+          Just age
+
+        else
+          Nothing
+
+* Result
+
+- A `Result` is useful when you have logic that may "fail".
+- `Result String Int type` is saying, "my errors are strings and my successes are integers."
+
+  String.toInt : String -> Result String Int
+
+- `Result` is a union type
+
+  type Result error value
+    = Err error
+    | Ok value
+
+  > import String
+
+  > String.toInt "128"
+  Ok 128 : Result String Int
+
+  > String.toInt "64"
+  Ok 64 : Result String Int
+
+  > String.toInt "BBBB"
+  Err "could not convert string 'BBBB' to an Int" : Result String Int
+
+* Task
+
+- Tasks in Elm are useful for things like HTTP requests, getting the current time, and printing things out to the console
+- Stuff that interacts with services outside your program, takes a long time, or may fail
+
+  getString : String -> Task Error String
+
+- `getString` tries to get a string from a given URL
+- Does not mean we are actually making the GET request, just describing what we want to do
+- `Task Error String` means "I have a task that may fail with an `Http.Error` or succeed with a `String`"
+- A `Result` is already done and a `Task` is not
+
+  Time.now : Task x Time
+
+- The type variable `x` is basically saying "I am not going to force you to handle a particular type of errors" because it does not produce any
+
+* Chaining Tasks
+
+- Try one task `and then` try another task
+- First you try to do `Task x a`. If it fails, the whole thing fails. If it succeeds, we take the resulting a value and create a second task
+
+  andThen : Task x a -> (a -> Task x b) -> Task x b
+
+  getStockQuotes =
+    Time.now `andThen` \time ->
+      Http.getString ("//www.example.com/stocks?time=" ++ toString time)
+
+
+* Elm Architecture
+
+  import Html exposing (Html, button, div, text)
+  import Html.App as App
+  import Html.Events exposing (onClick)
+
+  main =
+    App.beginnerProgram { model = 0, view = view, update = update }
+
+  type Msg = Increment | Decrement
+
+  update msg model =
+    case msg of
+      Increment ->
+        model + 1
+
+      Decrement ->
+        model - 1
+
+  view model =
+    div []
+      [ button [ onClick Decrement ] [ text "-" ]
+      , div [] [ text (toString model) ]
+      , button [ onClick Increment ] [ text "+" ]
+      ]
