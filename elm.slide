@@ -9,7 +9,7 @@ kwangyul.seo@gmail.com
 
 1. What is Elm?
 2. Key Features
-3. Coer Language
+3. Core Language
 4. Type System
 5. Error Handling
 6. Result and Task
@@ -395,7 +395,7 @@ kwangyul.seo@gmail.com
 - `divide` takes one argument and returns a function `Float -> Float`
 - `Float -> Float -> Float` is in fact `Float -> (Float -> Float)`
 
-* Error Handling Historical Contex
+* Error Handling Historical Context
 
 - Null
 The inventor, Tony Hoare, has this to say about it:
